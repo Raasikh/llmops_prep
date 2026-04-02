@@ -1,6 +1,6 @@
 # LLMOps and Production AI.
 
-- How do you monitor LLM applications in production?
+## How do you monitor LLM applications in production?
 
 Monitor across 5 layers (product + model + retrieval/tools + system + security):
 
@@ -10,11 +10,11 @@ Monitor across 5 layers (product + model + retrieval/tools + system + security):
 - System reliability: p50/p95 latency (end-to-end + per stage), timeouts, error rate, rate-limit events, GPU utilization, queue depth, cache hit rate.
 - Security: prompt-injection attempts, data-exfil signals (long outputs, repeated sensitive patterns), anomalous usage, and per-user/tenant access denials.
 
-In interview terms: “I log every request with a trace-id and capture prompt + retrieved context ids + model version + tool calls + latency breakdown, then I build dashboards + alerts for quality and ops metrics, and run canary/A|B releases gated by offline eval + online guardrails.”
+> In interview terms: “I log every request with a trace-id and capture prompt + retrieved context ids + model version + tool calls + latency breakdown, then I build dashboards + alerts for quality and ops metrics, and run canary/A|B releases gated by offline eval + online guardrails.”
 
 ---
 
-- What is LLM observability?
+## What is LLM observability?
 
 LLM observability = having enough end-to-end visibility to (1) debug failures, (2) measure quality and safety, and (3) control cost/latency for an LLM app.
 
@@ -29,7 +29,7 @@ Plus standard telemetry: traces, metrics, logs.
 
 ---
 
-- What are guardrails for LLMs, and how do you implement them?
+## What are guardrails for LLMs, and how do you implement them?
 
 Guardrails are controls that constrain and verify LLM behavior so the app is safe, compliant, and reliable.
 
@@ -52,7 +52,7 @@ In production, these are implemented as deterministic middleware + model-based c
 
 ---
 
-- How do you implement content filtering for AI outputs?
+## How do you implement content filtering for AI outputs?
 
 Typical pipeline:
 
@@ -72,50 +72,52 @@ For PII, use detection + redaction both at ingestion (docs) and at generation ti
 
 ---
 
-- How do you estimate the cost of running an AI-powered feature in production?
+## How do you estimate the cost of running an AI-powered feature in production?
 
 Break cost into: model inference + retrieval/tools + infra + engineering overhead.
 
 1. Inference cost (dominant for many apps)
     - Estimate tokens per request: input tokens (prompt + context + retrieved chunks) + output tokens.
-    - Cost = (input_tokens/1K  *input_price) + (output_tokens/1K*  output_price).
+    - Cost = (input_tokens/1K * input_price) + (output_tokens/1K * output_price).
     - Multiply by expected QPS / DAU and consider peak traffic.
 2. GPU/self-hosted cost (if not per-token)
     - Capacity planning: throughput per GPU at target p95 latency (with batching).
     - GPUs needed = peak_requests_per_second / requests_per_second_per_GPU.
-    - Monthly cost = GPU_hourly_rate  *24*  30 * GPU_count (+ CPU, storage, networking).
+    - Monthly cost = GPU_hourly_rate * 24 * 30 * GPU_count (+ CPU, storage, networking).
 3. RAG/tooling cost
-    - Embedding cost: new docs/day  *embedding_tokens/doc*  embedding_price.
+    - Embedding cost: new docs/day * embedding_tokens/doc * embedding_price.
     - Vector DB: storage for embeddings + query cost (and replication).
     - Tool calls: external API costs (search, OCR, email, etc.).
 4. Overheads + risk buffers
     - Retries, caching (reduces cost), safety checks, eval runs, and monitoring/log retention.
 
-Interview line: “I build a spreadsheet model with token histograms from logs, then compute p50/p95 tokens, cost per request, and monthly spend under expected traffic; I also run load tests to translate that into GPU capacity if self-hosting.”
-
-- Explain the AI product lifecycle from ideation to production
-1. Problem/ideation
-- Define the user + use case, success metrics, and constraints (latency, cost, privacy/security, UX).
-- Decide if AI is actually needed vs rules/search.
-1. Data strategy
-- Identify data sources, labeling plan, and quality checks (schema integrity, missingness, leakage).
-- Set up dataset versioning and train/val/test splits (often time-based if drift matters).
-1. Modeling / prototyping
-- Start with a baseline (could be prompt-only, small model, classical ML, or RAG).
-- Iterate with offline evaluation and error analysis; add guardrails and failure-mode tests (hallucination, prompt injection, unsafe outputs).
-1. System design + production planning
-- Choose serving approach (managed endpoint vs self-hosted), scaling plan, and security model (IAM, network boundaries, secrets).
-- For RAG/enterprise: implement document-level permissions (RBAC) and ensure authorization filters are enforced before retrieval results are returned.[[1]](https://www.notion.so/31e88a4b53af8008b3b4d83c5c5b6359?pvs=21)
-1. Deployment
-- CI/CD for model + prompt + retrieval configs.
-- Roll out with canary/shadow/A/B testing; monitor p50/p95 latency, error rates, and quality.
-1. Monitoring + iteration
-- Monitor model quality (drift, calibration), system health, and security signals (tool-call logs, suspicious prompt patterns, DDoS/rate limits).[[1]](https://www.notion.so/31e88a4b53af8008b3b4d83c5c5b6359?pvs=21)
-- Build retraining / re-index triggers, regression eval suites, and incident-driven improvements.
+> Interview line: “I build a spreadsheet model with token histograms from logs, then compute p50/p95 tokens, cost per request, and monthly spend under expected traffic; I also run load tests to translate that into GPU capacity if self-hosting.”
 
 ---
 
-- What is LLMOps, and how does it differ from traditional MLOps?
+## Explain the AI product lifecycle from ideation to production
+1. Problem/ideation
+    - Define the user + use case, success metrics, and constraints (latency, cost, privacy/security, UX).
+    - Decide if AI is actually needed vs rules/search.
+1. Data strategy
+    - Identify data sources, labeling plan, and quality checks (schema integrity, missingness, leakage).
+    - Set up dataset versioning and train/val/test splits (often time-based if drift matters).
+1. Modeling / prototyping
+    - Start with a baseline (could be prompt-only, small model, classical ML, or RAG).
+    - Iterate with offline evaluation and error analysis; add guardrails and failure-mode tests (hallucination, prompt injection, unsafe outputs).
+1. System design + production planning
+    - Choose serving approach (managed endpoint vs self-hosted), scaling plan, and security model (IAM, network boundaries, secrets).
+    - For RAG/enterprise: implement document-level permissions (RBAC) and ensure authorization filters are enforced before retrieval results are returned.[[1]](https://www.notion.so/31e88a4b53af8008b3b4d83c5c5b6359?pvs=21)
+1. Deployment
+    - CI/CD for model + prompt + retrieval configs.
+    - Roll out with canary/shadow/A/B testing; monitor p50/p95 latency, error rates, and quality.
+1. Monitoring + iteration
+    - Monitor model quality (drift, calibration), system health, and security signals (tool-call logs, suspicious prompt patterns, DDoS/rate limits).[[1]](https://www.notion.so/31e88a4b53af8008b3b4d83c5c5b6359?pvs=21)
+    - Build retraining / re-index triggers, regression eval suites, and incident-driven improvements.
+
+---
+
+## What is LLMOps, and how does it differ from traditional MLOps?
 
 LLMOps = the set of practices to reliably build, deploy, monitor, secure, and iterate LLM-powered systems (apps that use prompts, tools, RAG, agents, and often multiple models). Compared to traditional MLOps, it typically adds or emphasizes:
 
@@ -129,7 +131,7 @@ Traditional MLOps is often more about: dataset → training → model artifact �
 
 ---
 
-- How do you serve LLMs in production?
+## How do you serve LLMs in production?
 
 A practical, interview-style answer:
 
@@ -149,7 +151,7 @@ A practical, interview-style answer:
 
 ---
 
-- What is model quantization?
+## What is model quantization?
 
 Quantization = converting model weights and/or activations from higher-precision (FP32/FP16/BF16) to lower-precision (e.g., INT8, INT4, NF4) to reduce memory, bandwidth, and often speed up inference.
 
@@ -164,7 +166,7 @@ Key points to say in an interview:
 
 ---
 
-- How do you optimize LLM inference costs in production?
+## How do you optimize LLM inference costs in production?
 
 Treat cost as (tokens + tool calls + infra) under a latency/quality SLA. The main levers:
 
@@ -187,7 +189,7 @@ Treat cost as (tokens + tool calls + infra) under a latency/quality SLA. The mai
 
 ---
 
-- How do you implement A/B testing for LLM systems?
+## How do you implement A/B testing for LLM systems?
 
 Run experiments at the “system” level (prompt + model + retrieval + guardrails), not just the base model.
 
@@ -205,11 +207,11 @@ Run experiments at the “system” level (prompt + model + retrieval + guardrai
 5. Analysis
     - Segment by intent, user cohort, and long-context vs short-context.
 
-Interview line: “I gate B behind offline eval + canary, then run a sticky user-level A/B and monitor both quality and safety/cost metrics; if B wins and stays within guardrails, I ramp to 100%.”
+> Interview line: “I gate B behind offline eval + canary, then run a sticky user-level A/B and monitor both quality and safety/cost metrics; if B wins and stays within guardrails, I ramp to 100%.”
 
 ---
 
-- What is CI/CD for AI applications, and how does it differ from traditional CI/CD?
+## What is CI/CD for AI applications, and how does it differ from traditional CI/CD?
 
 CI/CD for AI covers more artifacts than just code:
 
@@ -229,7 +231,7 @@ What’s different in practice:
 
 ---
 
-- How do you version and manage prompts in production?
+## How do you version and manage prompts in production?
 
 Treat prompts like code:
 
@@ -246,7 +248,7 @@ Treat prompts like code:
 
 ---
 
-- What is model versioning, and how do you handle model rollbacks?
+## What is model versioning, and how do you handle model rollbacks?
 
 Model versioning = assigning unique, immutable versions to model artifacts and tracking lineage (data, code, hyperparams, evals).
 
@@ -266,7 +268,7 @@ Practical approach:
 
 ---
 
-- How do you implement rate limiting and throttling for LLM APIs?
+## How do you implement rate limiting and throttling for LLM APIs?
 
 Goal: protect cost + latency + downstream dependencies while keeping UX predictable.
 
@@ -287,7 +289,7 @@ Goal: protect cost + latency + downstream dependencies while keeping UX predicta
 
 ---
 
-- How do you handle model updates and migrations without downtime?
+## How do you handle model updates and migrations without downtime?
 
 Use “parallel run + gradual cutover” patterns:
 
@@ -306,7 +308,7 @@ Use “parallel run + gradual cutover” patterns:
 
 ---
 
-- What is the role of feature flags in AI deployments?
+## What is the role of feature flags in AI deployments?
 
 Feature flags let you control exposure and rollback quickly for risky, behavior-changing systems.
 
@@ -320,7 +322,7 @@ Common uses:
 
 ---
 
-- How do you implement logging and tracing for LLM applications?
+## How do you implement logging and tracing for LLM applications?
 
 You want end-to-end traces that connect user request → retrieval/tools → model → post-processing.
 
@@ -340,7 +342,7 @@ You want end-to-end traces that connect user request → retrieval/tools → mod
 
 ---
 
-- How do you handle PII and sensitive data in LLM inputs and outputs?
+## How do you handle PII and sensitive data in LLM inputs and outputs?
 
 Layered approach (prevent it entering, prevent it being retrieved, prevent it leaking):
 
@@ -358,7 +360,9 @@ Layered approach (prevent it entering, prevent it being retrieved, prevent it le
 6. Model/provider choices
     - For high-sensitivity: self-host or use providers with strong data-handling guarantees; disable training on your data.
 
-1. Gateway pattern for LLM API management
+---
+
+## Gateway pattern for LLM API management
 
 A “gateway” is a dedicated service that sits between your clients (web/mobile/backend) and one or more LLM providers/models. It centralizes cross-cutting concerns so every app team doesn’t re-implement them.
 
@@ -376,7 +380,10 @@ Core responsibilities:
 A typical flow:
 
 - Client → Gateway → (optional) RAG service / tool services → LLM provider(s) → Gateway post-processing → Client
-1. Streaming responses for real-time AI applications
+
+---
+
+## Streaming responses for real-time AI applications
 
 Streaming is usually implemented as “send tokens/chunks as they’re generated” instead of waiting for the full completion. Two common transports:
 
@@ -398,7 +405,10 @@ Implementation checklist (what matters in production):
     - Time-to-first-token (TTFT)
     - Tokens/sec (or chars/sec) during the stream
     - Stream interruption rate (client disconnects, proxy resets)
-1. Key SLAs + metrics for production AI systems (latency/throughput/availability)
+
+---
+
+## Key SLAs + metrics for production AI systems (latency/throughput/availability)
 
 Think in layers: user-perceived UX, system health, and model economics.
 
@@ -423,7 +433,10 @@ Cost and efficiency:
 - Cost per request / per successful task
 - Cache hit rate
 - Spend per tenant + anomaly detection (sudden spikes)
-1. Cloud vs on-device model deployment (high-level tradeoffs)
+
+---
+
+## Cloud vs on-device model deployment (high-level tradeoffs)
 
 Cloud deployment tends to win on:
 
@@ -450,7 +463,10 @@ Common hybrid pattern:
 
 - On-device for “fast, private, small” tasks (classification, short drafting, command intent)
 - Cloud for “hard, long, tool-using” tasks (deep reasoning, large context, RAG, multi-step agents)
-1. Fallback strategies when primary model is unavailable or rate-limited
+
+---
+
+## Fallback strategies when primary model is unavailable or rate-limited
 
 You want layered resilience, not just “try another model”.
 
@@ -476,7 +492,10 @@ Operationally, track:
 
 - Fallback activation rate (too high = your primary is unhealthy or capacity is insufficient)
 - Success rate after fallback (if low, your fallback isn’t actually viable)
-1. Structured output from LLMs reliably in production
+
+---
+
+## Structured output from LLMs reliably in production
 
 Goal: make outputs machine-parseable with high success and safe failure modes.
 
@@ -500,7 +519,9 @@ A robust approach:
 
 If you want, I can answer each of these in “interview mode” (tight 30–60 second responses) vs “system design mode” (deeper architecture).
 
-1. Handling long contexts efficiently in production (compression + prefix caching)
+---
+
+## Handling long contexts efficiently in production (compression + prefix caching)
 - Context budgeting (first): set a hard token budget per request (input + output) and allocate it explicitly across system prompt, conversation history, retrieved docs, and tool outputs.
 - Context compression patterns:
     - Summarize history into “state”: periodically replace older turns with a compact summary + a small set of pinned facts (user preferences, constraints, identifiers).
@@ -513,7 +534,10 @@ If you want, I can answer each of these in “interview mode” (tight 30–60 s
 - Use a “two-pass” approach for very long inputs:
     - Pass 1: compress/summarize/extract into a compact intermediate representation.
     - Pass 2: run the main reasoning/generation over the compact form.
-1. Semantic routing + implementing it in a multi-model system
+
+---
+
+## Semantic routing + implementing it in a multi-model system
 
 Semantic routing = automatically choosing which model/prompt/toolchain to use based on the meaning (intent/complexity/risk) of the request rather than static rules.
 
@@ -530,7 +554,10 @@ Implementation patterns:
     - Add “abstain/uncertain” route → escalate to stronger model or ask a clarifying question (if your UX allows).
 - Measure + iterate:
     - Track router confusion: misroutes, fallback rate after route selection, and per-route success/latency/cost.
-1. Managing secrets and API keys securely in LLM applications
+
+---
+
+## Managing secrets and API keys securely in LLM applications
 
 Baseline rules:
 
@@ -551,7 +578,10 @@ Practical implementation:
 - Redaction + egress controls:
     - Redact known secret patterns in logs.
     - Lock down outbound traffic so only approved provider endpoints are reachable (prevents exfil to arbitrary hosts).
-1. Latency spikes during peak hours — stabilizing the LLM API
+
+---
+
+## Latency spikes during peak hours — stabilizing the LLM API
 
 Diagnose first: spikes are usually saturation (queues), upstream rate limits, or noisy neighbors.
 
@@ -571,7 +601,10 @@ Stabilization levers (most impactful first):
     - For managed APIs: ensure connection reuse, streaming (improves perceived latency), and request timeouts aligned with user UX.
 - Operational SLOs:
     - Track p95/p99 end-to-end and per-stage (gateway, retrieval, provider). If p99 is bad, it’s often queueing—treat queue depth as a first-class metric.
-1. Costs too high — reducing costs without degrading quality
+
+---
+
+## Costs too high — reducing costs without degrading quality
 
 A proven “no-regret” order:
 
@@ -588,9 +621,9 @@ A proven “no-regret” order:
     - Better prompts + structured output validation to reduce retries/repair loops.
     - Track “regenerate” and internal retry rate—retries are a silent cost multiplier.
 
-If you want these in interview-style responses, I can compress each into a 30–45 second “sayable” answer.
+---
 
-1) Hitting LLM provider rate limits during peak hours — how to handle it  
+## Hitting LLM provider rate limits during peak hours — how to handle it  
 
 - Prevent: enforce your own quotas before the provider
     - Token-bucket at the gateway per tenant/user/key for requests/min, tokens/min, and concurrent streams.
@@ -605,7 +638,9 @@ If you want these in interview-style responses, I can compress each into a 30–
 - Measure:
     - Track rate-limit events by tenant/model, queue depth, retry rate, and “fallback activated” rate.
 
-2) Switching providers without downtime (dependency on one provider)  
+---
+
+## Switching providers without downtime (dependency on one provider)  
 
 - Put a provider-agnostic gateway in front:
     - Normalize request/response (incl. streaming) into your own schema.
@@ -618,7 +653,9 @@ If you want these in interview-style responses, I can compress each into a 30–
 - Operational readiness:
     - Health checks per provider, circuit breakers, and a routing policy that can instantly disable a provider (kill switch).
 
-3) Scaling from 100 rps to 5000 rps (concurrency)  
+---
+
+## Scaling from 100 rps to 5000 rps (concurrency)  
 
 - First identify the bottleneck: queueing vs compute vs downstream tools vs DB/retrieval. Then apply:
 - Control concurrency explicitly:
@@ -633,7 +670,9 @@ If you want these in interview-style responses, I can compress each into a 30–
 - Separate critical paths:
     - Split “fast path” (cheap model/no tools) from “slow path” (tools/RAG/large model) so slow requests don’t starve the entire system.
 
-4) Peak traffic spike brings system down — handling peak traffic  
+---
+
+## Peak traffic spike brings system down — handling peak traffic  
 
 - Protect the system first:
     - Load shedding: prioritized queues + reject early for low-priority traffic.
@@ -645,7 +684,9 @@ If you want these in interview-style responses, I can compress each into a 30–
 - Capacity planning:
     - Pre-warm during known peak windows; autoscale on queue depth and saturation metrics; set SLO-based alerts.
 
-5) Eliminating single points of failure (provider outage took you down)  
+---
+
+## Eliminating single points of failure (provider outage took you down)  
 
 - Multi-provider strategy:
     - At least one secondary provider (or self-hosted fallback) with a compatible “minimum viable” capability.
@@ -656,7 +697,9 @@ If you want these in interview-style responses, I can compress each into a 30–
 - Design for partial correctness:
     - If tools or best model unavailable, return a degraded answer with explicit limitations rather than failing the whole request.
 
-6) Multi-LLM pipeline breaks when one model fails — orchestration failure handling  
+---
+
+## Multi-LLM pipeline breaks when one model fails — orchestration failure handling  
 
 - Make every step resilient and typed:
     - Define step contracts (input/output schemas), validate outputs, and fail fast on schema violations.
@@ -669,7 +712,9 @@ If you want these in interview-style responses, I can compress each into a 30–
 - Time budgets:
     - Allocate time per step and enforce a hard end-to-end deadline; skip optional steps when near budget.
 
-7) Zero visibility into which step is failing — adding observability  
+---
+
+## Zero visibility into which step is failing — adding observability  
 
 - End-to-end tracing:
     - Generate `trace_id`/`request_id` at ingress; propagate through every step and tool call.
@@ -681,7 +726,9 @@ If you want these in interview-style responses, I can compress each into a 30–
 - Debug sampling:
     - Sample full payloads for a small % (with redaction) and 100% for errors/safety events.
 
-8) Quantization caused accuracy drop — minimizing quantization loss  
+---
+
+## Quantization caused accuracy drop — minimizing quantization loss  
 
 - Choose the right quantization method:
     - Prefer weight-only quantization first; consider higher-bit (INT8) before INT4; use per-channel quantization when available.
@@ -694,7 +741,9 @@ If you want these in interview-style responses, I can compress each into a 30–
 - Guard with eval gates:
     - Maintain a regression eval suite (including long-context and tool-use cases) and block rollout if quality drops past threshold.
 
-9) Designing graceful degradation (one failing component shouldn’t take down platform)  
+---
+
+## Designing graceful degradation (one failing component shouldn’t take down platform)  
 
 - Isolation:
     - Bulkheads: separate pools/queues for different tenants/features/models so one hot path can’t starve others.
